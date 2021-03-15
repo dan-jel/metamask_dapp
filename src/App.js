@@ -93,16 +93,7 @@ const initialize = () => {
 
     // Calculate the amount from Input String
     const amountRaw = document.getElementById("amount").value;
-
-    if (amountRaw.length === 1) {
-      var amount = "00" + amountRaw;
-    } else if (amountRaw.length === 2) {
-      var amount = "0" + amountRaw;
-    } else {
-      var amount = amountRaw;
-    }
-
-    const fullAmount = amount + "000000000000000";
+    const fullAmount = amountRaw * 1000000000000000000;
     const hexAmount = "0x" + fullAmount.toString(16);
 
     console.log("hexamount", hexAmount);
