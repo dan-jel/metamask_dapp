@@ -62,7 +62,6 @@ const initialize = () => {
 
   //This will start the onboarding proccess
   const onClickInstall = () => {
-    console.log("onboarding");
     onboardButton.innerText = "Onboarding in progress";
     onboardButton.disabled = true;
     //On this object we have startOnboarding which will start the onboarding process for our end user
@@ -80,10 +79,12 @@ const initialize = () => {
       method: "eth_getBalance",
       params: [accounts[0], "latest"],
     });
+    const rawBalane = balance.slice(2);
+    const dezBalance = parseInt(rawBalane, 16) / 1000000000000000000;
     //We take the first address in the array of addresses and display it
     getVersionResult.innerHTML = version || "Not able to get version";
     getAccountsResult.innerHTML = accounts[0] || "Not able to get accounts";
-    getBalanceResult.innerHTML = balance || "Not able to get balance";
+    getBalanceResult.innerHTML = dezBalance || "Not able to get balance";
   });
 
   sendMoney.addEventListener("click", async () => {
@@ -96,14 +97,14 @@ const initialize = () => {
     const fullAmount = amountRaw * 1000000000000000000;
     const hexAmount = "0x" + fullAmount.toString(16);
 
-    console.log("hexamount", hexAmount);
+    const receiver = document.getElementById("receiver").value;
 
     const transaction = await window.ethereum.request({
       method: "eth_sendTransaction",
       params: [
         {
           from: from[0],
-          to: "0xF213906f272181f7980eF117c4640D8C67FFA14f",
+          to: receiver,
           value: hexAmount,
         },
       ],
@@ -118,45 +119,55 @@ function App() {
   return (
     <Container>
       <button id="connectButton">connect!</button>
+      <Line />
       <button id="getAccounts">get account information</button>
-      <Row>
-        <p id="title">Chain Version:</p>
-        <p id="getVersionResult"></p>
-      </Row>
-      <Row>
-        <p id="title">Account Address:</p>
-        <p id="getAccountsResult"></p>
-      </Row>
-      <Row>
-        <p id="title">Current Balance:</p>
-        <p id="getBalanceResult"></p>
-      </Row>
-      <p id="info"></p>
+
+      <h4 id="title">Chain Version:</h4>
+      <p id="getVersionResult"></p>
+
+      <h4 id="title">Account Address:</h4>
+      <p id="getAccountsResult"></p>
+
+      <h4 id="title">Current Balance (in eth):</h4>
+      <p id="getBalanceResult"></p>
+
+      <Line />
+
+      <h4>amount:</h4>
       <input type="text" id="amount"></input>
+
+      <h4>to:</h4>
+      <input type="text" id="receiver"></input>
+
       <button id="sendMoney">send money!</button>
+
+      <Line />
+
       <p id="getTransactionResult"></p>
     </Container>
   );
 }
+
+const Line = styled.div`
+  width: 75%;
+  height: 1px;
+  background: black;
+  margin: 10px 0;
+`;
 
 const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   button {
-    margin: 20px 0 0 0;
+    margin: 20px 0;
     width: 200px;
   }
-`;
-
-const Row = styled.div`
-  display: flex;
-  width: 80%;
-  height: auto;
-  #title {
-    width: 125px;
-    text-align: end;
-    margin-right: 15px;
+  h4 {
+    margin: 5px 0;
+  }
+  p {
+    margin: 5px 0;
   }
 `;
 
