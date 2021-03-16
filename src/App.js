@@ -87,6 +87,20 @@ const initialize = () => {
     getBalanceResult.innerHTML = dezBalance || "Not able to get balance";
   });
 
+  window.ethereum.on("accountsChanged", (accounts) => {
+    // Handle the new accounts, or lack thereof.
+    // "accounts" will always be an array, but it can be empty.
+    getAccountsButton.click();
+  });
+
+  window.ethereum.on("chainChanged", (chainId) => {
+    // Handle the new chain.
+    // Correctly handling chain changes can be complicated.
+    // We recommend reloading the page unless you have good reason not to.
+    window.location.reload();
+    getAccountsButton.click();
+  });
+
   sendMoney.addEventListener("click", async () => {
     const from = await window.ethereum.request({
       method: "eth_accounts",
