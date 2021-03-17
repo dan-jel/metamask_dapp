@@ -3,7 +3,7 @@
 <br />
 
 Das ist mein erster Versuch eine Metamask Dapp zu erstellen.
-In der ersten Phase probiere ich die grundlegenden Interaktionen mit einem Wallet zu ermöglichen, wie z.B. das Anzeigen der Coins / Tokens auf der jeweiligen Adresse sowie Überweisungen direkt von der Website initialisieren und dann via der Metamask Extension zu bestätigen.
+In der ersten Phase probiere ich die grundlegenden Interaktionen mit einem Wallet zu ermöglichen, wie z.B. das Anzeigen der Coins / Tokens auf der jeweiligen Adresse sowie Überweisungen direkt von der Website zu initialisieren und dann via der Metamask Extension zu bestätigen.
 
 <br />
 

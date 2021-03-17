@@ -1,5 +1,7 @@
 import styled from "styled-components";
 import MetaMaskOnboarding from "@metamask/onboarding";
+import { useState } from "react";
+import axios from "axios";
 
 const forwarderOrigin = "http://localhost:9010";
 
@@ -36,7 +38,6 @@ const initialize = () => {
     onboardButton.innerText = "connected!";
   };
 
-  //------Inserted Code------\\
   const MetaMaskClientCheck = () => {
     //Now we check to see if Metmask is installed
     if (!isMetaMaskInstalled()) {
@@ -130,11 +131,88 @@ const initialize = () => {
 window.addEventListener("DOMContentLoaded", initialize);
 
 function App() {
+  const [coins, setCoins] = useState([]);
+  const [ether, setEther] = useState();
+  const [error, setError] = useState(null);
+
+  const Tokens = () => {
+    if (error) {
+      return <p>{error}</p>;
+    } else {
+      if (coins !== undefined) {
+        return (
+          <ul>
+            <li>ETH | {ether}</li>
+            {coins.map((coin, key) => {
+              return (
+                <li key={key}>
+                  {coin.tokenInfo.symbol} | {coin.balance}
+                </li>
+              );
+            })}
+          </ul>
+        );
+      } else {
+        if (ether) {
+          return (
+            <ul>
+              <li>ETH | {ether}</li>
+            </ul>
+          );
+        } else {
+          <p>keine Coins vorhanden</p>;
+        }
+      }
+    }
+  };
+
+  const loadTokens = async () => {
+    const url0 = "https://api.ethplorer.io/getAddressInfo/";
+    const addressRAW = await window.ethereum.request({
+      method: "eth_accounts",
+    });
+    const address = addressRAW[0];
+    const url1 = "?apiKey=EK-2wdEu-AV4a9wG-91CUN";
+    const url = url0 + address + url1;
+
+    try {
+      const response = await axios.get(url);
+      // Success 🎉
+      setEther(response.data.ETH.balance);
+      setCoins(response.data.tokens || []);
+    } catch (error) {
+      // Error 😨
+      if (error.response) {
+        /*
+         * The request was made and the server responded with a
+         * status code that falls out of the range of 2xx
+         */
+
+        const err = error.message;
+        setError(err);
+      } else if (error.request) {
+        /*
+         * The request was made but no response was received, `error.request`
+         * is an instance of XMLHttpRequest in the browser and an instance
+         * of http.ClientRequest in Node.js
+         */
+        setError(error);
+        console.log("timeout", error.request);
+      } else {
+        // Something happened in setting up the request and triggered an Error
+        setError(error);
+        console.log("Error", error.message);
+      }
+    }
+  };
+
   return (
     <Container>
       <button id="connectButton">connect!</button>
       <Line />
-      <button id="getAccounts">get account information</button>
+      <button id="getAccounts" onClick={() => loadTokens()}>
+        get account information
+      </button>
 
       <h4 id="title">Chain Version:</h4>
       <p id="getVersionResult"></p>
@@ -156,8 +234,11 @@ function App() {
       <button id="sendMoney">send money!</button>
 
       <Line />
-
+      <h4>Transaction result:</h4>
       <p id="getTransactionResult"></p>
+      <Line />
+      <h4>Tokens:</h4>
+      <Tokens />
     </Container>
   );
 }
