@@ -2,6 +2,7 @@ import styled from "styled-components";
 import MetaMaskOnboarding from "@metamask/onboarding";
 import { useState } from "react";
 import axios from "axios";
+import { useSelector, useDispatch } from "react-redux";
 
 const forwarderOrigin = "http://localhost:9010";
 
@@ -131,39 +132,24 @@ const initialize = () => {
 window.addEventListener("DOMContentLoaded", initialize);
 
 function App() {
-  const [coins, setCoins] = useState([]);
-  const [ether, setEther] = useState();
   const [error, setError] = useState(null);
 
+  const tokens = useSelector((store) => store.tokens);
+
+  const dispatch = useDispatch();
+
   const Tokens = () => {
-    if (error) {
-      return <p>{error}</p>;
-    } else {
-      if (coins !== undefined) {
-        return (
-          <ul>
-            <li>ETH | {ether}</li>
-            {coins.map((coin, key) => {
-              return (
-                <li key={key}>
-                  {coin.tokenInfo.symbol} | {coin.balance}
-                </li>
-              );
-            })}
-          </ul>
-        );
-      } else {
-        if (ether) {
+    return (
+      <div>
+        {tokens.map((token, key) => {
           return (
-            <ul>
-              <li>ETH | {ether}</li>
-            </ul>
+            <li key={key}>
+              {token.name} {token.symbol} {token.balance}
+            </li>
           );
-        } else {
-          <p>keine Coins vorhanden</p>;
-        }
-      }
-    }
+        })}
+      </div>
+    );
   };
 
   const loadTokens = async () => {
@@ -175,11 +161,31 @@ function App() {
     const url1 = "?apiKey=EK-2wdEu-AV4a9wG-91CUN";
     const url = url0 + address + url1;
 
+    const tokenData = [];
+
     try {
       const response = await axios.get(url);
       // Success 🎉
-      setEther(response.data.ETH.balance);
-      setCoins(response.data.tokens || []);
+      const etherData = {
+        name: "Ether",
+        symbol: "ETH",
+        balance: response.data.ETH.balance,
+      };
+
+      tokenData.push(etherData);
+
+      if (Array.isArray(response.data.tokens)) {
+        response.data.tokens.map((token) => {
+          const dataOne = {
+            name: token.tokenInfo.name,
+            symbol: token.tokenInfo.symbol,
+            balance: token.balance,
+          };
+          tokenData.push(dataOne);
+          return "";
+        });
+      }
+      return tokenData;
     } catch (error) {
       // Error 😨
       if (error.response) {
@@ -203,16 +209,30 @@ function App() {
         setError(error);
         console.log("Error", error.message);
       }
+      return error;
     }
+  };
+
+  const TokenHandler = async () => {
+    const errorLog = document.getElementById("errorLog");
+    const Data = await loadTokens();
+    if (Array.isArray(Data)) {
+      errorLog.innerHTML = "successfull";
+      dispatch({
+        type: "SET",
+        token: Data,
+      });
+    } else {
+      errorLog.innerHTML = error;
+    }
+    console.log("DATA;", Data);
   };
 
   return (
     <Container>
       <button id="connectButton">connect!</button>
       <Line />
-      <button id="getAccounts" onClick={() => loadTokens()}>
-        get account information
-      </button>
+      <button id="getAccounts">get account information</button>
 
       <h4 id="title">Chain Version:</h4>
       <p id="getVersionResult"></p>
@@ -237,7 +257,9 @@ function App() {
       <h4>Transaction result:</h4>
       <p id="getTransactionResult"></p>
       <Line />
+      <button onClick={() => TokenHandler()}>get Token information</button>
       <h4>Tokens:</h4>
+      <p id="errorLog"></p>
       <Tokens />
     </Container>
   );
