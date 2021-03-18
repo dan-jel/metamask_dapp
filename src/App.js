@@ -143,14 +143,31 @@ function App() {
       <div>
         {tokens.map((token, key) => {
           return (
-            <li key={key}>
-              {token.name} {token.symbol} {token.balance}
-            </li>
+            <Row key={key}>
+              <p id="symbol">{token.symbol}</p>
+              <p id="name">{token.name} </p>
+              <p id="balance">{token.balance}</p>
+            </Row>
           );
         })}
       </div>
     );
   };
+
+  const Row = styled.div`
+    display: flex;
+    p {
+      padding: 10px 0;
+    }
+    #symbol {
+      width: 150px;
+    }
+    #name {
+      width: 250px;
+    }
+    #balance {
+    }
+  `;
 
   const loadTokens = async () => {
     const url0 = "https://api.ethplorer.io/getAddressInfo/";
@@ -176,13 +193,32 @@ function App() {
 
       if (Array.isArray(response.data.tokens)) {
         response.data.tokens.map((token) => {
-          const dataOne = {
-            name: token.tokenInfo.name,
-            symbol: token.tokenInfo.symbol,
-            balance: token.balance,
-          };
-          tokenData.push(dataOne);
-          return "";
+          const rawResult = String(token.balance).split("e");
+          const rawBalance = parseFloat(rawResult[0]);
+
+          if (rawResult.length > 1) {
+            const decimals = parseInt(token.tokenInfo.decimals);
+            const faktor = parseFloat(rawResult[1].slice(1));
+            const balance = rawBalance * 10 ** faktor;
+            const newBalance = parseFloat(balance) / 10 ** decimals;
+            const dataOne = {
+              name: token.tokenInfo.name,
+              symbol: token.tokenInfo.symbol,
+              balance: newBalance,
+            };
+            tokenData.push(dataOne);
+            return "";
+          } else {
+            const decimals = token.tokenInfo.decimals;
+            const balance = rawBalance / 10 ** decimals;
+            const dataOne = {
+              name: token.tokenInfo.name,
+              symbol: token.tokenInfo.symbol,
+              balance: balance,
+            };
+            tokenData.push(dataOne);
+            return "";
+          }
         });
       }
       return tokenData;
@@ -225,7 +261,6 @@ function App() {
     } else {
       errorLog.innerHTML = error;
     }
-    console.log("DATA;", Data);
   };
 
   return (
